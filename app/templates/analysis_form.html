@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<!-- Summernote CSS -->
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4>Analisis Berita</h4>
+        </div>
+        <div class="card-body">
+          <h5>{{ berita.judul }}</h5>
+          <p><a href="{{ berita.link }}" target="_blank">{{ berita.link }}</a></p>
+          <hr>
+          <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+              {{ form.analysis_data.label(class="form-label") }}
+              {{ form.analysis_data(class="form-control summernote", rows=8) }}
+              {% if form.analysis_data.errors %}
+                <div class="text-danger">
+                  {% for error in form.analysis_data.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              {{ form.analysis_conclusion.label(class="form-label") }}
+              {{ form.analysis_conclusion(class="form-control summernote", rows=5) }}
+              {% if form.analysis_conclusion.errors %}
+                <div class="text-danger">
+                  {% for error in form.analysis_conclusion.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+            <a href="{{ url_for('berita.index', page=request.args.get('page', 1)) }}" class="btn btn-secondary">Batal</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Summernote JS -->
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('.summernote').summernote({
+      height: 200,
+      toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'underline', 'clear']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']],
+        ['insert', ['link']],
+        ['view', ['fullscreen', 'codeview', 'help']]
+      ],
+      placeholder: 'Tulis analisis di sini...'
+    });
+  });
+</script>
+{% endblock %}

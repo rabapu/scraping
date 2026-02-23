@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header" style="background-color: #003153;">
+                    <h5 class="mb-0 text-white">Edit {% if current_user.role == 'admin' %} User {% else %} Profil {% endif %} - {{ user.username }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {% if form.username.errors %}
+                            {{ form.username(class="form-control is-invalid") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.username.errors %}
+                                <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            {{ form.username(class="form-control") }}
+                            {% endif %}
+                            <small class="form-text text-muted">Minimal 3 karakter, maksimal 50 karakter</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {% if form.email.errors %}
+                            {{ form.email(class="form-control is-invalid", type="email") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.email.errors %}
+                                <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            {{ form.email(class="form-control", type="email") }}
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {% if form.password.errors %}
+                            {{ form.password(class="form-control is-invalid") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.password.errors %}
+                                <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            {{ form.password(class="form-control") }}
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Kosongkan jika tidak ingin mengubah password. Minimal 6 karakter jika diisi.
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.confirm_password.label(class="form-label") }}
+                            {% if form.confirm_password.errors %}
+                            {{ form.confirm_password(class="form-control is-invalid") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.confirm_password.errors %}
+                                <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            {{ form.confirm_password(class="form-control") }}
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.role.label(class="form-label") }}
+                            {% if form.role.errors %}
+                            {{ form.role(class="form-select is-invalid") }}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.role.errors %}
+                                <i class="bi bi-exclamation-circle"></i> {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            {{ form.role(class="form-select") }}
+                            {% endif %}
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            {{ form.submit(class="btn btn-primary", value="Simpan") }}
+                            <a href="{{ url_for('users.view_user', user_id=user.id) }}" class="btn btn-secondary">Batal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle"></i>
+                <strong>Informasi:</strong> User ID <code>{{ user.id }}</code> dibuat pada {{ user.created_at.strftime('%d/%m/%Y %H:%M') if user.created_at else '-' }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

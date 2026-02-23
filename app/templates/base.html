@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EWS Pemberitaan Media Massa{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    {% block extra_css %}{% endblock %}
+    {% block head_extra %}{% endblock %}
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: 600; }
+        .footer { margin-top: 3rem; padding: 1rem 0; color: #6c757d; text-align: center; border-top: 1px solid #dee2e6; }
+    </style>
+</head>
+<body>
+    <!-- Navbar Biru Modern -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: #1d2951;">
+        <div class="{% if current_user.is_authenticated and current_user.role == 'user' %} container {% else %} container-fluid {% endif %}">
+            <a class="navbar-brand" href="{{ url_for('berita.index') }}">
+                <i class="bi bi-newspaper"></i> EWS Pemberitaan Media Massa
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('berita.index') }}">
+                                <i class="bi bi-house-door"></i> Beranda
+                            </a>
+                        </li>
+                        {% if current_user.role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'keywords' %}active{% endif %}" href="{{ url_for('keywords.keywords') }}">
+                                <i class="bi bi-tags"></i> Kelola Keyword
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link {% if request.endpoint == 'users.list_users' %}active{% endif %}" href="{{ url_for('users.list_users') }}">
+                                <i class="bi bi-people"></i> Kelola Pengguna
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> {{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('users.update_user', user_id=current_user.id) }}"><i class="bi bi-gear"></i> Edit Profil</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('auth.login') }}">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="{% if current_user.is_authenticated and current_user.role == 'user' %} container {% else %} container {% endif %} my-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'danger' else 'exclamation-circle' if category == 'warning' else 'info-circle' }}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container-fluid">
+            <span><i class="bi bi-c-circle"></i> 2026 EWS dari Pemberitaan Media Massa (detik & kompas).</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% block title %}Berita - EWS Pemberitaan Media Massa{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="h3">Berita</h3>
+    <div>
+        <span class="badge bg-secondary"><i class="bi bi-database"></i> Total {{ total_berita }} berita</span>
+    </div>
+</div>
+{% if current_user.role == 'admin' %}
+<!-- Form Start Scraping -->
+<form method="POST" action="{{ url_for('tasks.start_scrape') }}" class="card p-3 mb-4 shadow-sm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row align-items-center">
+        <div class="col-12 col-md-8 mb-2">
+            <em>Scrapping </em>dari detik.com dan kompas.com dengan periode 5 hari ke belakang dengan keyword 
+            yang dapat diatur dari menu keyword setting, generate ringkasan berita menggunakan AI sehingga memerlukan 
+            waktu yang sedikit lebih lama  
+        </div>
+        <div class="col-12 col-md-4 text-end mb-2">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-play-circle"></i> Mulai Scraping
+            </button>
+        </div>
+    </div>
+</form>
+<form id="deleteForm" action="{{ url_for('berita.delete_berita') }}" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="berita_ids" id="delete_berita_ids" value="">
+</form>
+{% endif %}
+
+{% if hasil %}
+{% if current_user.role == 'admin' %}
+<div class="d-flex gap-2 mb-3">
+    <button type="button" class="btn btn-danger" onclick="submitDelete()">
+        <i class="bi bi-archive"></i> Arsipkan yg ditandai
+    </button>
+</div>
+{% endif %}
+<!-- Tabel Responsif -->
+<div class="table-responsive">
+    <table class="table table-hover table-sm align-middle">
+        <thead class="table-light">
+            <tr>
+                {% if current_user.role == 'admin' %}
+                <th width="30">
+                    <input class="form-check-input" type="checkbox" id="select-all">
+                </th>
+                {% endif %}
+                <th class="col-8">Judul Berita</th>
+                <th>Data Lain</th>
+                {% if current_user.role == 'admin' %}
+                <th>Status</th>
+                {% endif %}
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in hasil %}
+            <tr>
+                {% if current_user.role == 'admin' %}
+                <td>
+                    <input class="berita-checkbox" {% if item.need_analysis %} disabled {% endif %} type="checkbox" name="berita_ids" value="{{ item.id }}">
+                </td>
+                {% endif %}
+                <td>
+                    <a href="{{ item.link }}" target="_blank" class="fw-semibold text-decoration-none">
+                        <i class="bi bi-link-45deg"></i> {{ item.judul }}
+                    </a>
+                    <div class="small text-muted mt-1">{{ item.ringkasan }}</div>
+                    {% if item.relevance_explanation %}
+                    <div class="small bg-light p-1 mt-1 rounded">
+                        <i class="bi bi-chat-quote"></i> <strong>Penjelasan relevansi dengan BC:</strong><em>(by AI)</em><br>
+                        {{ item.relevance_explanation }}
+                    </div>
+                    {% endif %}
+                </td>
+                <td>
+                    <p>
+                        <small class="text-muted">keyword:</small><br>
+                        <span class="badge badge-sm bg-secondary">{{ item.keyword }}</span>
+                    </p>
+                    <p>
+                        <small class="text-muted">tanggal:</small><br>
+                        <small>{{ item.tanggal }}</small>
+                    </p>
+                    <p>
+                        {% if item.relevance_score is not none %}
+                        <span class="text-muted small">Relevansi:</span><br>
+                        <span class="badge rounded-pill badge-sm small 
+                            {% if item.relevance_score >= 70 %}bg-success
+                            {% elif item.relevance_score >= 40 %}bg-warning text-dark
+                            {% else %}bg-danger{% endif %} 
+                            ">
+                            {{ item.relevance_score }}%
+                        </span>
+                        {% else %}
+                        <span class="text-muted small">Relevansi:</span><br>
+                        <div class="mt-2">
+                            <button type="button" 
+                                    class="btn btn-sm btn-primary generate-relevance-btn" 
+                                    data-id="{{ item.id }}" 
+                                    data-page="{{ page }}">
+                                Generate AI
+                            </button>
+                        </div>
+                        {% endif %}
+                    </p>
+                </td>
+                {% if current_user.role == 'admin' %}
+                <td>
+                    {% if item.analysis_data %}
+                        <span class="text-success" title="Sudah dianalisis"><i class="bi bi-check-all"></i> <small>sudah dianalisis</small></span>
+                    {% elif item.need_analysis %}
+                        <span class="text-warning" title="Perlu dianalisis"><i class="bi bi-check"></i> <small>perlu dianalisis</small></span>
+                    {% else %}
+                        <span class="text-secondary" title="Belum dianalisis"><i class="bi bi-x"></i> <small>belum dianalisis</small></span>
+                    {% endif %}
+                </td>
+                {% endif %}
+                <td>
+                    {% if current_user.role == 'admin' %}
+                    <!-- Tombol Tandai Analisis (hanya jika belum ditandai dan belum dianalisis) -->
+                    {% if not item.need_analysis and not item.analysis_data %}
+                    <form action="{{ url_for('berita.mark_need_analysis', berita_id=item.id) }}" method="post" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-warning" title="Tandai Analisis"><i class="bi bi-check-square"></i></button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Tombol Isi/Edit Analisis (jika ditandai atau sudah ada analisis) -->
+                    {% if item.need_analysis or item.analysis_data %}
+                    <a href="{{ url_for('berita.edit_analysis', berita_id=item.id, page=page) }}" class="btn btn-sm btn-primary" title="Tambah/ Edit Analisis">
+                        {% if item.analysis_data %}<i class="bi bi-pencil-square"></i>{% else %}<i class="bi bi-plus-square"></i>{% endif %}
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                    <!-- Tombol Lihat Detail Analisis (jika sudah ada) bisa diintegrasikan dengan modal, tapi kita bisa andalkan halaman edit -->
+                    {% if item.analysis_data %}
+                    <button type="button" title="Lihat Analisis" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#analysisModal{{ item.id }}">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <!-- Modal untuk menampilkan analisis (sama seperti sebelumnya) -->
+                    <div class="modal fade" id="analysisModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title">Analisis Data - {{ item.judul|truncate(50) }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                            <h6>Berita:</h6>
+                            <a href="{{ item.link }}" target="_blank" class="fw-semibold text-decoration-none">
+                                <i class="bi bi-link-45deg"></i> {{ item.judul }}
+                            </a>
+                            <h6>Ringkasan Berita:</h6>
+                            <p>{{ item.ringkasan }}</p>
+                            {% if item.relevance_explanation %}
+                            <h6>Penjelasan relevansi dengan BC (Generate AI):</h6>
+                            <p>{{ item.relevance_explanation }}</p>
+                            {% endif %}
+                            <p></p>
+                            <h6>Analisis:</h6>
+                            <p>{{ item.analysis_data|safe }}</p>
+                            <h6>Kesimpulan:</h6>
+                            <p>{{ item.analysis_conclusion|safe }}</p>
+                            <div class="justify-content-between">
+                                {% if item.analysis_updated_at %}
+                            <small class="text-muted">Terakhir diperbarui: {{ item.analysis_updated_at }}</small>
+                            {% endif %}
+                            {% if item.relevance_score is not none %}
+                            <span class="badge rounded-pill 
+                                {% if item.relevance_score >= 70 %}bg-success
+                                {% elif item.relevance_score >= 40 %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %} 
+                                fs-6">
+                                {{ item.relevance_score }}%
+                            </span>
+                            {% endif %}
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page > 1 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('berita.index', page=page-1) }}" aria-label="Previous">
+                <span aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
+            </a>
+        </li>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+            {% elif p >= page - 2 and p <= page + 2 %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('berita.index', page=p) }}">{{ p }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('berita.index', page=page+1) }}" aria-label="Next">
+                <span aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info text-center py-5">
+    <i class="bi bi-database fs-1"></i>
+    <p class="mt-3">Belum ada data berita. Klik tombol "Mulai Scraping" untuk mengambil berita.</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Delegasi event untuk tombol generate relevance
+    document.body.addEventListener('click', function(e) {
+        const btn = e.target.closest('.generate-relevance-btn');
+        if (!btn) return;
+        
+        e.preventDefault();
+        
+        const beritaId = btn.dataset.id;
+        const page = btn.dataset.page;
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        
+        // Simpan teks asli untuk dikembalikan jika error
+        const originalHTML = btn.innerHTML;
+        
+        // Ubah tombol menjadi loading state
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...';
+        
+        if (!confirm('Generate skor relevansi DJBC untuk berita ini?')) {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+            return;
+        }
+        
+        fetch(`/generate_relevance/${beritaId}?page=${page}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+            alert('Gagal memproses. Coba lagi.');
+        });
+    });
+
+    // Select all checkbox
+    document.getElementById('select-all').addEventListener('change', function(e) {
+        let checkboxes = document.querySelectorAll('.berita-checkbox:not([disabled])');
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+    });
+
+    
+    // Fungsi hapus individual
+    window.hapusIndividual = function(id) {
+        if (confirm('Hapus berita ini?')) {
+            const form = document.getElementById('delete-form');
+            form.action = "{{ url_for('berita.delete_berita') }}";
+            document.querySelectorAll('input[name="berita_ids"]').forEach(cb => cb.checked = false);
+            const cb = document.querySelector(`input[name="berita_ids"][value="${id}"]`);
+            if (cb) cb.checked = true;
+            form.submit();
+        }
+    };
+});
+
+function submitDelete() {
+    let selected = [];
+    document.querySelectorAll('.berita-checkbox:checked').forEach(cb => {
+        selected.push(cb.value);
+    });
+    if (selected.length === 0) {
+        alert('Pilih berita yang akan dihapus.');
+        return;
+    }
+    document.getElementById('delete_berita_ids').value = selected.join(',');
+    document.getElementById('deleteForm').submit();
+}
+</script>
+{% endblock %}
