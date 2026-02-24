@@ -5,10 +5,10 @@
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Buat User Baru</h3>
+        <div class="col-12 col-md-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h6 class="mb-0">BUAT USER BARU</h6>
                 </div>
                 <div class="card-body">
                     <form method="POST" novalidate>
@@ -87,8 +87,8 @@
                         </div>
 
                         <div class="mb-3">
-                            {{ form.submit(class="btn btn-primary") }}
-                            <a href="{{ url_for('users.list_users') }}" class="btn btn-secondary">Batal</a>
+                            {{ form.submit(class="btn btn-sm btn-outline-primary") }}
+                            <a href="{{ url_for('users.list_users') }}" class="btn btn-sm btn-outline-secondary">Batal</a>
                         </div>
                     </form>
                 </div>
