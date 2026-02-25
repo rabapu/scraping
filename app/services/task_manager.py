@@ -6,26 +6,56 @@ from app.services.scraper import scrape_detik_by_keyword, scrape_kompas_by_keywo
 from app.services.ai import generate_conclusion_with_deepseek
 from app.models import insert_berita, get_berita_by_link
 from config import Config
+from app.utils.db import get_db_connection
 
-# Global task status
-tasks = {}
 tasks_lock = threading.Lock()
 
 def generate_task_id():
     import random
     return f"task_{int(time.time())}_{random.randint(1000,9999)}"
 
+def save_task_status(task_id, **kwargs):
+    """Simpan atau update status task ke database."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Cek apakah sudah ada
+    cursor.execute("SELECT task_id FROM scraping_tasks WHERE task_id = %s", (task_id,))
+    if cursor.fetchone():
+        # Update
+        set_clause = ", ".join([f"{k}=%s" for k in kwargs.keys()])
+        values = list(kwargs.values()) + [task_id]
+        cursor.execute(f"UPDATE scraping_tasks SET {set_clause} WHERE task_id = %s", values)
+    else:
+        # Insert
+        columns = ", ".join(kwargs.keys())
+        placeholders = ", ".join(["%s"] * len(kwargs))
+        values = list(kwargs.values())
+        cursor.execute(f"INSERT INTO scraping_tasks (task_id, {columns}) VALUES (%s, {placeholders})", [task_id] + values)
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def get_task_status(task_id):
+    """Ambil status task dari database."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM scraping_tasks WHERE task_id = %s", (task_id,))
+    task = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return task
+
 def run_scrape_task(task_id, keywords):
-    with tasks_lock:
-        tasks[task_id] = {
-            'status': 'running',
-            'progress': 0,
-            'total_keywords': len(keywords),
-            'current_keyword': '',
-            'saved_count': 0,
-            'error': None,
-            'complete': False
-        }
+    
+    save_task_status(task_id,
+        status='running',
+        progress=0,
+        total_keywords=len(keywords),
+        current_keyword='',
+        saved_count=0,
+        error=None,
+        complete=False
+    )
 
     total_saved = 0
     try:
@@ -34,8 +64,7 @@ def run_scrape_task(task_id, keywords):
         total_items_estimate = len(keywords) * 20  # perkiraan, agar progress tidak mentok
 
         for keyword in keywords:
-            with tasks_lock:
-                tasks[task_id]['current_keyword'] = keyword
+            save_task_status(task_id, current_keyword=keyword)
 
             # Scrape kompas
             kompas_items = scrape_kompas_by_keyword(keyword)
@@ -69,30 +98,25 @@ def run_scrape_task(task_id, keywords):
                             sumber=item['sumber']
                         )
                         total_saved += 1
-                        with tasks_lock:
-                            tasks[task_id]['saved_count'] = total_saved
+                        save_task_status(task_id, saved_count=total_saved)
 
                 total_processed += 1
                 progress = int((total_processed / total_items_estimate) * 100)
-                with tasks_lock:
-                    tasks[task_id]['progress'] = min(progress, 99)  # jangan sampai 100 sebelum selesai
+                save_task_status(task_id, progress=min(progress, 99))  # jangan sampai 100 sebelum selesai
 
             time.sleep(1)  # jeda antar keyword
 
-        with tasks_lock:
-            tasks[task_id].update({
-                'status': 'completed',
-                'progress': 100,
-                'saved_count': total_saved,
-                'complete': True
-            })
+        save_task_status(task_id,
+            status='completed',
+            progress=100,
+            saved_count=total_saved,
+            complete=True)
     except Exception as e:
-        with tasks_lock:
-            tasks[task_id].update({
-                'status': 'error',
-                'error': str(e),
-                'complete': True
-            })
+        save_task_status(task_id,
+            status='error',
+            error=str(e),
+            complete=True
+        )
 
 def parse_tanggal(tanggal_str, sumber):
     """Mengubah string tanggal menjadi format YYYY-MM-DD"""
@@ -126,7 +150,3 @@ def parse_tanggal(tanggal_str, sumber):
         return f"{thn}-{bln_angka:02d}-{tgl:02d}"
     except (ValueError, IndexError):
         return None
-
-def get_task_status(task_id):
-    with tasks_lock:
-        return tasks.get(task_id)
