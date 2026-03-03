@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="h3">Berita</h3>
+    <h5 class="h5">BERITA</h5>
     <div>
         <span class="badge bg-secondary"><i class="bi bi-database"></i> Total {{ total_berita }} berita</span>
     </div>
@@ -39,177 +39,174 @@
     </button>
 </div>
 {% endif %}
-<!-- Tabel Responsif -->
-<div class="table-responsive overflow-hidden">
-    <div class="row border-bottom">
-        {% if current_user.role == 'admin' %}
-        <div class="col-12 col-md-auto">
-            <input type="checkbox" class="form-check-input" name="select-all" id="select-all">
-        </div>
-        {% endif %}
-        <div class="col-12 col-md-6">
-            <div class="small fw-semibold text-body-secondary d-none d-md-block">JUDUL</div>
-        </div>
-        <div class="col-12 col-md-2">
-            <div class="small fw-semibold text-body-secondary d-none d-md-block">DATA LAIN</div>
-        </div>
-        {% if current_user.role == 'admin' %}
-        <div class="col-12 col-md-2">
-            <div class="small fw-semibold text-body-secondary d-none d-md-block">STATUS</div>
-        </div>
-        {% endif %}
-        <div class="col-12 col-md-auto">
-            <div class="small fw-semibold text-body-secondary d-none d-md-block"></div>
+<div class="row border-bottom border-danger py-2 bg-light" style="position: sticky; top: var(--sticky-top, 60px);">
+    {% if current_user.role == 'admin' %}
+    <div class="col-12 col-md-auto">
+        <input type="checkbox" class="form-check-input" name="select-all" id="select-all">
+    </div>
+    {% endif %}
+    <div class="col-12 col-md-6">
+        <div class="small fw-semibold text-body-secondary d-none d-md-block">JUDUL</div>
+    </div>
+    <div class="col-12 col-md-2">
+        <div class="small fw-semibold text-body-secondary d-none d-md-block">DATA LAIN</div>
+    </div>
+    {% if current_user.role == 'admin' %}
+    <div class="col-12 col-md-2">
+        <div class="small fw-semibold text-body-secondary d-none d-md-block">STATUS</div>
+    </div>
+    {% endif %}
+    <div class="col-12 col-md-auto">
+        <div class="small fw-semibold text-body-secondary d-none d-md-block"></div>
+    </div>
+</div>
+{% for item in hasil %}
+<div class="row border-bottom py-2">
+    {% if current_user.role == 'admin' %}
+    <div class="col-12 col-md-auto mb-2 mb-md-0">
+        <input class="berita-checkbox form-check-input" {% if item.need_analysis %} disabled {% endif %} type="checkbox" name="berita_ids" value="{{ item.id }}">
+    </div>
+    {% endif %}
+    <div class="col-12 col-md-6 mb-2 mb-md-0">
+        <div class="small text-secondary">
+            <a href="{{ item.link }}" target="_blank" class="fw-semibold text-decoration-none">
+                <i class="bi bi-link-45deg"></i> {{ item.judul }}
+            </a>
+            <div class="text-body-emphasis mt-1" style="text-align: justify;">{{ item.ringkasan }}</div>
+            {% if item.relevance_explanation %}
+            <div class="bg-white p-2 border mt-1 rounded" style="text-align: justify;">
+                <i class="bi bi-chat-quote"></i> <strong>Penjelasan relevansi dengan BC:</strong><br>
+                {{ item.relevance_explanation }} <br>
+                <em>**Relevansi digenerate oleh AI sehingga mungkin tidak akurat</em>
+            </div>
+            {% endif %}
         </div>
     </div>
-    {% for item in hasil %}
-    <div class="row border-bottom py-2">
-        {% if current_user.role == 'admin' %}
-        <div class="col-12 col-md-auto mb-2 mb-md-0">
-            <input class="berita-checkbox" {% if item.need_analysis %} disabled {% endif %} type="checkbox" name="berita_ids" value="{{ item.id }}">
+    <div class="col-12 col-md-2 mb-2 mb-md-0">
+        <div class="mb-2">
+            <div class="small fw-medium text-body-tertiary">Keyword:</div>
+            <div class="small fw-semibold text-body-emphasis">{{ item.keyword }}</div>
         </div>
-        {% endif %}
-        <div class="col-12 col-md-6 mb-2 mb-md-0">
-            <div class="small text-secondary">
-                <a href="{{ item.link }}" target="_blank" class="fw-semibold text-decoration-none">
-                    <i class="bi bi-link-45deg"></i> {{ item.judul }}
-                </a>
-                <div class="text-body-emphasis mt-1" style="text-align: justify;">{{ item.ringkasan }}</div>
-                {% if item.relevance_explanation %}
-                <div class="bg-white p-2 border mt-1 rounded" style="text-align: justify;">
-                    <i class="bi bi-chat-quote"></i> <strong>Penjelasan relevansi dengan BC:</strong><br>
-                    {{ item.relevance_explanation }} <br>
-                    <em>**Relevansi digenerate oleh AI sehingga mungkin tidak akurat</em>
-                </div>
-                {% endif %}
-            </div>
+        <div class="mb-2">
+            <div class="small fw-medium text-body-tertiary">Tanggal:</div>
+            <div class="small fw-semibold text-body-emphasis">{{ item.tanggal }}</div>
         </div>
-        <div class="col-12 col-md-2 mb-2 mb-md-0">
-            <div class="mb-2">
-                <div class="small fw-medium text-body-tertiary">Keyword:</div>
-                <div class="small fw-semibold text-body-emphasis">{{ item.keyword }}</div>
-            </div>
-            <div class="mb-2">
-                <div class="small fw-medium text-body-tertiary">Tanggal:</div>
-                <div class="small fw-semibold text-body-emphasis">{{ item.tanggal }}</div>
-            </div>
-            <div>
-                <div class="small fw-medium text-body-tertiary">Relevansi:</div>
-                {% if item.relevance_score is not none %}
-                <span class="badge rounded-pill badge-sm small 
-                    {% if item.relevance_score >= 70 %}bg-success
-                    {% elif item.relevance_score >= 40 %}bg-warning text-dark
-                    {% else %}bg-danger{% endif %} 
-                    ">
-                    {{ item.relevance_score }}%
-                </span>
-                {% else %}
-                <div class="mt-2">
-                    <button type="button" 
-                            class="btn btn-sm btn-primary generate-relevance-btn" 
-                            data-id="{{ item.id }}" 
-                            data-page="{{ page }}">
-                        Generate AI
-                    </button>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% if current_user.role == 'admin' %}
-        <div class="col-12 col-md-2 mb-2 mb-md-0">
-            {% if item.analysis_data %}
-                <span class="fw-semibold text-success-emphasis small">sudah dianalisis</span>
-            {% elif item.need_analysis %}
-                <span class="fw-semibold text-warning-emphasis small">perlu dianalisis</span>
+        <div>
+            <div class="small fw-medium text-body-tertiary">Relevansi:</div>
+            {% if item.relevance_score is not none %}
+            <span class="badge rounded-pill badge-sm small 
+                {% if item.relevance_score >= 70 %}bg-success
+                {% elif item.relevance_score >= 40 %}bg-warning text-dark
+                {% else %}bg-danger{% endif %} 
+                ">
+                {{ item.relevance_score }}%
+            </span>
             {% else %}
-                <span class="fw-semibold text-danger-emphasis small">belum dianalisis</span>
+            <div class="mt-2">
+                <button type="button" 
+                        class="btn btn-sm btn-primary generate-relevance-btn" 
+                        data-id="{{ item.id }}" 
+                        data-page="{{ page }}">
+                    Generate AI
+                </button>
+            </div>
             {% endif %}
         </div>
+    </div>
+    {% if current_user.role == 'admin' %}
+    <div class="col-12 col-md-2 mb-2 mb-md-0">
+        {% if item.analysis_data %}
+            <span class="fw-semibold text-success-emphasis small">sudah dianalisis</span>
+        {% elif item.need_analysis %}
+            <span class="fw-semibold text-warning-emphasis small">perlu dianalisis</span>
+        {% else %}
+            <span class="fw-semibold text-danger-emphasis small">belum dianalisis</span>
         {% endif %}
-        <div class="col-12 col-md-1 mb-2 mb-md-0">
-            {% if current_user.role == 'admin' %}
-            <!-- Tombol Tandai Analisis (hanya jika belum ditandai dan belum dianalisis) -->
-            {% if not item.need_analysis and not item.analysis_data %}
-            <form action="{{ url_for('berita.mark_need_analysis', berita_id=item.id) }}" method="post" style="display:inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Tandai Analisis"><i class="bi bi-check-square"></i></button>
-            </form>
-            {% endif %}
+    </div>
+    {% endif %}
+    <div class="col-12 col-md-1 mb-2 mb-md-0">
+        {% if current_user.role == 'admin' %}
+        <!-- Tombol Tandai Analisis (hanya jika belum ditandai dan belum dianalisis) -->
+        {% if not item.need_analysis and not item.analysis_data %}
+        <form action="{{ url_for('berita.mark_need_analysis', berita_id=item.id) }}" method="post" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Tandai Analisis"><i class="bi bi-check-square"></i></button>
+        </form>
+        {% endif %}
 
-            <!-- Tombol Isi/Edit Analisis (jika ditandai atau sudah ada analisis) -->
-            {% if item.need_analysis or item.analysis_data %}
-            <a href="{{ url_for('berita.edit_analysis', berita_id=item.id, page=page) }}" class="btn btn-sm btn-outline-primary" title="Tambah/ Edit Analisis">
-                {% if item.analysis_data %}<i class="bi bi-pencil-square"></i>{% else %}<i class="bi bi-plus-square"></i>{% endif %}
-            </a>
-            {% endif %}
-            {% endif %}
-            <!-- Tombol Lihat Detail Analisis (jika sudah ada) diintegrasikan dengan modal -->
-            {% if item.analysis_data %}
-            <button type="button" title="Lihat Analisis" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#analysisModal{{ item.id }}">
-                <i class="bi bi-eye"></i>
-            </button>
-            <!-- Modal untuk menampilkan analisis -->
-            <div class="modal fade" id="analysisModal{{ item.id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h6 class="modal-title">Analisis Data - {{ item.judul|truncate(50) }}</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Tombol Isi/Edit Analisis (jika ditandai atau sudah ada analisis) -->
+        {% if item.need_analysis or item.analysis_data %}
+        <a href="{{ url_for('berita.edit_analysis', berita_id=item.id, page=page) }}" class="btn btn-sm btn-outline-primary" title="Tambah/ Edit Analisis">
+            {% if item.analysis_data %}<i class="bi bi-pencil-square"></i>{% else %}<i class="bi bi-plus-square"></i>{% endif %}
+        </a>
+        {% endif %}
+        {% endif %}
+        <!-- Tombol Lihat Detail Analisis (jika sudah ada) diintegrasikan dengan modal -->
+        {% if item.analysis_data %}
+        <button type="button" title="Lihat Analisis" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#analysisModal{{ item.id }}">
+            <i class="bi bi-eye"></i>
+        </button>
+        <!-- Modal untuk menampilkan analisis -->
+        <div class="modal fade" id="analysisModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h6 class="modal-title">Analisis Data - {{ item.judul|truncate(50) }}</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="p-2 border rounded bg-light mb-2">
+                        <h6 class="text-body-tertiary">Tautan Berita</h6>
+                        <a href="{{ item.link }}" target="_blank" class="fw-semibold small text-decoration-none">
+                            <i class="bi bi-link-45deg"></i> {{ item.judul }}
+                        </a>
                     </div>
-                    <div class="modal-body">
-                        <div class="p-2 border rounded bg-light mb-2">
-                            <h6 class="text-body-tertiary">Tautan Berita</h6>
-                            <a href="{{ item.link }}" target="_blank" class="fw-semibold small text-decoration-none">
-                                <i class="bi bi-link-45deg"></i> {{ item.judul }}
-                            </a>
-                        </div>
-                        <div class="p-2 border rounded bg-light mb-2"> 
-                            <h6 class="text-body-tertiary">Ringkasan Berita</h6>
-                            <p class="small text-body-secondary" style="text-align: justify;">{{ item.ringkasan }}</p>
-                        </div>
-                        {% if item.relevance_explanation %}
-                        <div class="p-2 border rounded bg-light mb-2">
-                            <h6 class="text-body-tertiary">Penjelasan relevansi dengan BC (Generate AI):</h6>
-                            <p class="small text-body-secondary" style="text-align: justify;">{{ item.relevance_explanation }}</p>
-                        </div>
-                        {% endif %}
-                        <div class="p-2 border rounded bg-light mb-2">
-                            <h6 class="text-body-tertiary">Analisis:</h6>
-                            <div class="small text-body-secondary" style="text-align: justify;">{{ item.analysis_data|safe }}</div>
-                        </div>
-                        <div class="p-2 border rounded bg-light mb-2">
-                            <h6 class="text-body-tertiary">Kesimpulan:</h6>
-                            <div class="small text-body-secondary" style="text-align: justify;">{{ item.analysis_conclusion|safe }}</div>
-                        </div>
-                        <div class="p-2 border bg-light">
-                            <div class="row">
-                                <div class="col-12 col-md-6">
-                                    {% if item.analysis_updated_at %}
-                                    <small class="text-muted">Terakhir diperbarui: {{ item.analysis_updated_at }}</small>
-                                    {% endif %}
-                                </div>
-                                {% if item.relevance_score is not none %}
-                                <div class="col-12 col-md-6 text-md-end">
-                                    <span class="small fw-semibold 
-                                        {% if item.relevance_score >= 70 %}text-success-emphasis
-                                        {% elif item.relevance_score >= 40 %}text-warning-emphasis
-                                        {% else %}text-danger-emphasis{% endif %} 
-                                        ">Skor relevansi AI:
-                                        {{ item.relevance_score }}%
-                                    </span>
-                                </div>
+                    <div class="p-2 border rounded bg-light mb-2"> 
+                        <h6 class="text-body-tertiary">Ringkasan Berita</h6>
+                        <p class="small text-body-secondary" style="text-align: justify;">{{ item.ringkasan }}</p>
+                    </div>
+                    {% if item.relevance_explanation %}
+                    <div class="p-2 border rounded bg-light mb-2">
+                        <h6 class="text-body-tertiary">Penjelasan relevansi dengan BC (Generate AI):</h6>
+                        <p class="small text-body-secondary" style="text-align: justify;">{{ item.relevance_explanation }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="p-2 border rounded bg-light mb-2">
+                        <h6 class="text-body-tertiary">Analisis:</h6>
+                        <div class="small text-body-secondary" style="text-align: justify;">{{ item.analysis_data|safe }}</div>
+                    </div>
+                    <div class="p-2 border rounded bg-light mb-2">
+                        <h6 class="text-body-tertiary">Kesimpulan:</h6>
+                        <div class="small text-body-secondary" style="text-align: justify;">{{ item.analysis_conclusion|safe }}</div>
+                    </div>
+                    <div class="p-2 border bg-light">
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                {% if item.analysis_updated_at %}
+                                <small class="text-muted">Terakhir diperbarui: {{ item.analysis_updated_at }}</small>
                                 {% endif %}
                             </div>
+                            {% if item.relevance_score is not none %}
+                            <div class="col-12 col-md-6 text-md-end">
+                                <span class="small fw-semibold 
+                                    {% if item.relevance_score >= 70 %}text-success-emphasis
+                                    {% elif item.relevance_score >= 40 %}text-warning-emphasis
+                                    {% else %}text-danger-emphasis{% endif %} 
+                                    ">Skor relevansi AI:
+                                    {{ item.relevance_score }}%
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-                </div>
             </div>
-            {% endif %}
+            </div>
         </div>
+        {% endif %}
     </div>
-    {% endfor %}
 </div>
+{% endfor %}
 <!-- Pagination -->
 {% if total_pages > 1 %}
 <nav aria-label="Page navigation" class="mt-4">
@@ -332,5 +329,16 @@ function submitDelete() {
     document.getElementById('delete_berita_ids').value = selected.join(',');
     document.getElementById('deleteForm').submit();
 }
+// Get the navbar height and apply it as a CSS variable
+const navbar = document.querySelector('.navbar');
+const setStickyOffset = () => {
+  const navbarHeight = navbar.offsetHeight;
+  document.documentElement.style.setProperty('--sticky-top', navbarHeight + 'px');
+  // Also adjust body padding if needed
+  document.body.style.paddingTop = navbarHeight + 'px';
+};
+
+window.addEventListener('load', setStickyOffset);
+window.addEventListener('resize', setStickyOffset);
 </script>
 {% endblock %}
