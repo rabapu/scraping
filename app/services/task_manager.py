@@ -46,16 +46,6 @@ def get_task_status(task_id):
     return task
 
 def run_scrape_task(task_id, keywords):
-    
-    save_task_status(task_id,
-        status='running',
-        progress=0,
-        total_keywords=len(keywords),
-        current_keyword='',
-        saved_count=0,
-        error=None,
-        complete=False
-    )
 
     total_saved = 0
     try:
@@ -64,14 +54,14 @@ def run_scrape_task(task_id, keywords):
         total_items_estimate = len(keywords) * 20  # perkiraan, agar progress tidak mentok
 
         for keyword in keywords:
-            save_task_status(task_id, current_keyword=keyword)
-
+            
             # Scrape kompas
             kompas_items = scrape_kompas_by_keyword(keyword)
             # Scrape detik
             detik_items = scrape_detik_by_keyword(keyword)
             all_items = kompas_items + detik_items
             total_items_estimate = len(keywords) * len(all_items)
+            save_task_status(task_id, total_estimate=total_items_estimate, current_keyword=keyword)
 
             for item in all_items:
                 # Cek duplikat berdasarkan link?
@@ -102,6 +92,7 @@ def run_scrape_task(task_id, keywords):
 
                 total_processed += 1
                 progress = int((total_processed / total_items_estimate) * 100)
+                print(f"Progress: {progress}% ({total_processed}/{total_items_estimate})")
                 save_task_status(task_id, progress=min(progress, 99))  # jangan sampai 100 sebelum selesai
 
             time.sleep(1)  # jeda antar keyword

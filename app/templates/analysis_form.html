@@ -10,17 +10,17 @@
   <div class="row">
     <div class="col-md-10 offset-md-1">
       <div class="card">
-        <div class="card-header bg-primary text-white">
-          <h4>Analisis Berita</h4>
+        <div class="card-header text-body-emphasis">
+          <h6>Analisis Berita</h6>
         </div>
         <div class="card-body">
-          <h5>{{ berita.judul }}</h5>
-          <p><a href="{{ berita.link }}" target="_blank">{{ berita.link }}</a></p>
-          <hr>
+          <h6>{{ berita.judul }}</h6>
+          <p><a href="{{ berita.link }}" target="_blank" class="text-decoration-none">{{ berita.link }}</a></p>
+          <hr class="bg-light">
           <form method="POST">
             {{ form.hidden_tag() }}
             <div class="mb-3">
-              {{ form.analysis_data.label(class="form-label") }}
+              {{ form.analysis_data.label(class="form-label fw-semibold") }}
               {{ form.analysis_data(class="form-control summernote", rows=8) }}
               {% if form.analysis_data.errors %}
                 <div class="text-danger">
@@ -29,7 +29,7 @@
               {% endif %}
             </div>
             <div class="mb-3">
-              {{ form.analysis_conclusion.label(class="form-label") }}
+              {{ form.analysis_conclusion.label(class="form-label fw-semibold") }}
               {{ form.analysis_conclusion(class="form-control summernote", rows=5) }}
               {% if form.analysis_conclusion.errors %}
                 <div class="text-danger">
@@ -37,8 +37,8 @@
                 </div>
               {% endif %}
             </div>
-            <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
-            <a href="{{ url_for('berita.index', page=request.args.get('page', 1)) }}" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="btn btn-outline-secondary" style="width: 180px;"><i class="bi bi-save"></i> {{ form.submit.label.text }}</button>
+            <a href="{{ url_for('berita.index', page=request.args.get('page', 1)) }}" class="btn btn-outline-secondary" style="width: 180px;"><i class="bi bi-x-lg"></i> Batal</a>
           </form>
         </div>
       </div>

@@ -2,7 +2,7 @@ from flask import Blueprint, redirect, url_for, flash, render_template, jsonify
 from flask_login import login_required
 from app.decorators import admin_required
 from app.models import get_all_keywords
-from app.services.task_manager import generate_task_id, run_scrape_task, get_task_status
+from app.services.task_manager import generate_task_id, run_scrape_task, get_task_status, save_task_status
 import threading
 
 tasks_bp = Blueprint('tasks', __name__)
@@ -17,8 +17,18 @@ def start_scrape():
         return redirect(url_for('keywords.keywords'))
 
     task_id = generate_task_id()
+    save_task_status(task_id,
+        status='running',
+        progress=0,
+        total_keywords=len(keywords),
+        current_keyword='',
+        saved_count=0,
+        error=None,
+        complete=False
+    )
     thread = threading.Thread(target=run_scrape_task, args=(task_id, keywords), daemon=True)
     thread.start()
+    #run_scrape_task(task_id, keywords)  # Jalankan langsung tanpa threading untuk debugging
     return redirect(url_for('tasks.loading_page', task_id=task_id))
 
 @tasks_bp.route('/loading/<task_id>')

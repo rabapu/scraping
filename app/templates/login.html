@@ -12,15 +12,21 @@
                 <form method="POST">
                     {{ form.hidden_tag() }}
                     <div class="mb-3">
-                        <label for="username" class="form-label"><i class="bi bi-person"></i> Username</label>
-                        {{ form.username(class="form-control", id="username", placeholder="Masukkan username") }}
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text" id="uname-icon"><i class="bi bi-person"></i></span>
+                        {{ form.username(class="form-control", id="username", placeholder="Masukkan username", aria_describedby="uname-icon") }}
+                        </div>
                         {% for error in form.username.errors %}
                             <div class="text-danger small"><i class="bi bi-exclamation-triangle"></i> {{ error }}</div>
                         {% endfor %}
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label"><i class="bi bi-lock"></i> Password</label>
-                        {{ form.password(class="form-control", id="password", placeholder="Masukkan password") }}
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text" id="pass-icon"><i class="bi bi-lock"></i></span>
+                        {{ form.password(class="form-control", id="password", placeholder="Masukkan password", aria_describedby="pass-icon") }}
+                        </div>
                         {% for error in form.password.errors %}
                             <div class="text-danger small"><i class="bi bi-exclamation-triangle"></i> {{ error }}</div>
                         {% endfor %}

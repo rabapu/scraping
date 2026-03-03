@@ -19,7 +19,7 @@
 </head>
 <body>
     <!-- Navbar Biru Modern -->
-    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: #1d2951;">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: #072923;">
         <div class="{% if current_user.is_authenticated and current_user.role == 'user' %} container {% else %} container-fluid {% endif %}">
             <a class="navbar-brand" href="{{ url_for('berita.index') }}">
                 <i class="bi bi-newspaper"></i> EWS Pemberitaan Media Massa
@@ -31,13 +31,13 @@
                 <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('berita.index') }}">
+                            <a class="nav-link {% if request.endpoint == 'berita.index' %}active{% endif %}" href="{{ url_for('berita.index') }}">
                                 <i class="bi bi-house-door"></i> Beranda
                             </a>
                         </li>
                         {% if current_user.role == 'admin' %}
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'keywords' %}active{% endif %}" href="{{ url_for('keywords.keywords') }}">
+                            <a class="nav-link {% if request.endpoint == 'keywords.keywords' %}active{% endif %}" href="{{ url_for('keywords.keywords') }}">
                                 <i class="bi bi-tags"></i> Kelola Keyword
                             </a>
                         </li>

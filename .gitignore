@@ -2,3 +2,4 @@ config.py
 __pycache__/
 *.pyc
 USERS_MANAGEMENT_README.md
+run.py

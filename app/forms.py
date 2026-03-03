@@ -21,8 +21,8 @@ class KeywordForm(FlaskForm):
     submit = SubmitField('Tambah')
 
 class AnalysisForm(FlaskForm):
-    analysis_data = TextAreaField('Data Analisis', validators=[DataRequired(), Length(max=5000)],
+    analysis_data = TextAreaField('Data Analisis', validators=[DataRequired(), Length(max=100000)],
         render_kw={"rows": 5, "placeholder": "Masukkan data temuan, angka, tren, dll."})
-    analysis_conclusion = TextAreaField('Kesimpulan', validators=[DataRequired(), Length(max=2000)],
+    analysis_conclusion = TextAreaField('Kesimpulan', validators=[DataRequired(), Length(max=100000)],
         render_kw={"rows": 3, "placeholder": "Kesimpulan analisis dan implikasi bagi DJBC"})
     submit = SubmitField('Simpan Analisis')

@@ -21,7 +21,7 @@ def fetch_article_content(url, timeout=10):
 
 def scrape_kompas_by_keyword(keyword, timeout=10):
     today = date.today()
-    five_days_ago = today - timedelta(days=5)
+    five_days_ago = today - timedelta(days=3)
     url = f"https://search.kompas.com/search?q={keyword}&sort=latest&site_id=all&start_date={five_days_ago}&end_date={today}"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     berita_list = []
@@ -49,7 +49,7 @@ def scrape_kompas_by_keyword(keyword, timeout=10):
 
 def scrape_detik_by_keyword(keyword, timeout=10):
     today = date.today()
-    five_days_ago = today - timedelta(days=5)
+    five_days_ago = today - timedelta(days=3)
     fromdate = five_days_ago.strftime("%d/%m/%Y")
     todate = today.strftime("%d/%m/%Y")
     url = f"https://www.detik.com/search/searchall?query={keyword}&result_type=latest&fromdatex={fromdate}&todatex={todate}"
